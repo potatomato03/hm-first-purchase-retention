@@ -72,6 +72,10 @@ GROUP BY a.cohort_month, s.cohort_size, a.k;
 CREATE OR REPLACE TABLE gold_odds_ratios AS
 SELECT * FROM read_files('/Volumes/workspace/hm_retention/raw/odds_ratios.csv', format => 'csv', header => true);
 
+-- 6. The same drivers in percentage points (average marginal effects from the notebook), which the dashboard charts
+CREATE OR REPLACE TABLE gold_marginal_effects AS
+SELECT * FROM read_files('/Volumes/workspace/hm_retention/raw/marginal_effects.csv', format => 'csv', header => true);
+
 -- Checks against the notebook
 SELECT 'cohort Aug 2019, month 1' AS check, retention_pct AS value FROM gold_cohort_retention
 WHERE cohort_month = DATE'2019-08-01' AND k = 1

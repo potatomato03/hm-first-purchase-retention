@@ -1,0 +1,19 @@
+driver_group,pp_change,pp_low,pp_high
+club status: PRE-CREATE,-14.9,-15.5,-14.4
+age: unknown,-7.8,-9.6,-6.0
+club status: other,-5.2,-7.8,-2.7
+department: Sport,-3.1,-4.0,-2.3
+age: 35-44,-3.0,-3.5,-2.4
+markdown: all on markdown,-2.5,-2.9,-2.1
+age: 55+,-2.1,-2.7,-1.6
+age: 45-54,-1.4,-1.9,-0.9
+markdown: some on markdown,-0.8,-1.2,-0.3
+department: Divided,-0.2,-0.6,0.1
+department: Menswear,0.3,-0.5,1.1
+items (per doubling),1.4,1.2,1.6
+age: 16-24,2.2,1.8,2.6
+first channel: store,2.9,2.5,3.3
+product groups: 2,3.0,2.6,3.5
+product groups: 3,3.4,2.8,4.1
+department: Baby/Children,4.0,2.8,5.3
+product groups: 4+,4.1,3.1,5.0

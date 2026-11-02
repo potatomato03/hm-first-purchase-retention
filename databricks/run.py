@@ -1,7 +1,7 @@
 """Upload the raw Parquet files to the Unity Catalog volume, or run a .sql file on the SQL warehouse.
 
 Usage:
-    python databricks/run.py upload                      (all four files)
+    python databricks/run.py upload                      (all five files)
     python databricks/run.py upload exports/odds_ratios.csv
     python databricks/run.py sql databricks/sql/01_bronze.sql
 """
@@ -35,7 +35,8 @@ if sys.argv[1] == "upload":
     run(f"CREATE VOLUME IF NOT EXISTS {CATALOG}.{SCHEMA}.{VOLUME}")
     # the regression results come from the notebook's export, so the dashboard can show them
     files = sys.argv[2:] or ["data/raw/customers.parquet", "data/raw/articles.parquet",
-                             "data/raw/transactions_train.parquet", "exports/odds_ratios.csv"]
+                             "data/raw/transactions_train.parquet", "exports/odds_ratios.csv",
+                             "exports/marginal_effects.csv"]
     for rel in files:
         src = ROOT / rel
         name = src.name

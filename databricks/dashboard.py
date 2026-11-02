@@ -2,7 +2,7 @@
 
 Usage: python databricks/dashboard.py
 """
-import json, pathlib
+import csv, json, pathlib
 from databricks.sdk.service.dashboards import Dashboard
 from connect import client
 
@@ -10,10 +10,13 @@ HERE = pathlib.Path(__file__).resolve().parent
 NAME = "H&M first-purchase retention"
 T = "workspace.hm_retention"
 PCT = {"type": "number-percent", "decimalPlaces": {"type": "max", "places": 1}}
+# target = today's return rate plus the lift the experiment is sized to detect (exports/experiment.csv)
+exp = next(csv.DictReader(open(HERE.parent / "exports" / "experiment.csv", encoding="utf8")))
+TARGET = round(float(exp["baseline"]) + float(exp["mde_pp"]) / 100, 4)
 
 datasets = {
     # 180 days is only knowable for first purchases by 2020-03-26, so later ones stay NULL and AVG skips them
-    "first_orders": f"""SELECT *, CAST(returned_90d AS INT) AS came_back,
+    "first_orders": f"""SELECT *, CAST(returned_90d AS INT) AS came_back, {TARGET} AS target,
        CASE WHEN first_date <= DATE'2020-03-26' THEN CAST(returned_180d AS INT) END AS came_back_180,
        CASE items_band WHEN '1' THEN '01' WHEN '2' THEN '02' WHEN '3' THEN '03'
             WHEN '4-5' THEN '04-05' WHEN '6-9' THEN '06-09' ELSE '10+' END AS items_in_basket
@@ -22,10 +25,8 @@ FROM {T}.silver_first_orders""",
     "weekly_channel": f"SELECT * FROM {T}.gold_weekly_channel",
     "burn_in": f"SELECT * FROM {T}.gold_burn_in",
     "return_window": f"SELECT * FROM {T}.gold_return_window",
-    # bars start at 0, so show the change in odds (odds ratio 0.45 = -55%) rather than the raw ratio
-    "odds_ratios": f"""SELECT driver_group, CAST(odds_ratio AS DOUBLE) AS odds_ratio,
-       round((CAST(odds_ratio AS DOUBLE) - 1) * 100, 1) AS change_in_odds_pct
-FROM {T}.gold_odds_ratios""",
+    "marginal_effects": f"""SELECT driver_group, CAST(pp_change AS DOUBLE) AS pp_change
+FROM {T}.gold_marginal_effects""",
 }
 
 n = 0
@@ -101,25 +102,36 @@ page1 = [
     counter("First-time buyers", "first_orders", "buyers", "COUNT(`customer_id`)", 0, 4),
     counter("Back within 90 days", "first_orders", back, back_expr, 2, 4, fmt=PCT),
     counter("Back within 180 days (first bought by Mar 2020)", "first_orders", "avg(came_back_180)", "AVG(`came_back_180`)", 4, 4, fmt=PCT),
+    # trend against target: two series on one line chart, both averaged per first-purchase month
+    place({"name": wid(),
+           "queries": query("first_orders", {"cohort_month": "`cohort_month`", back: back_expr, "avg(target)": "AVG(`target`)"}),
+           "spec": {"version": 3, "widgetType": "line",
+                    "encodings": {"x": {"fieldName": "cohort_month", "scale": {"type": "temporal"}, "displayName": "first purchase month"},
+                                  "y": {"scale": {"type": "quantitative"}, "format": PCT,
+                                        "fields": [{"fieldName": back, "displayName": "back within 90 days"},
+                                                   {"fieldName": "avg(target)", "displayName": f"target ({TARGET:.1%})"}]}},
+                    "frame": {"showTitle": True,
+                              "title": f"Return-rate trend by first-purchase month vs target ({TARGET:.1%} = today + the 1 pp lift the experiment is sized for)"}}},
+          0, 7, 6, 6),
     chart("bar", "Unfinished signup (PRE-CREATE) is the biggest warning sign", "first_orders",
-          "club_status", back, back_expr, (0, 7, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="club status"),
+          "club_status", back, back_expr, (0, 13, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="club status"),
     chart("bar", "Broader first baskets come back more", "first_orders",
-          "groups_band", back, back_expr, (3, 7, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="product groups in first basket"),
+          "groups_band", back, back_expr, (3, 13, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="product groups in first basket"),
     chart("bar", "Bigger first baskets come back more", "first_orders",
-          "items_in_basket", back, back_expr, (0, 13, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="items in first basket"),
+          "items_in_basket", back, back_expr, (0, 19, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="items in first basket"),
     chart("bar", "Deal-only first baskets come back less", "first_orders",
-          "markdown_band", back, back_expr, (3, 13, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="markdown items in first basket"),
+          "markdown_band", back, back_expr, (3, 19, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="markdown items in first basket"),
     chart("bar", "Store closures did not bring weaker online customers", "first_orders",
-          "period", back, back_expr, (0, 19, 3, 6), color="first_channel", y_fmt=PCT, y_title="back within 90 days", x_title="when they first bought"),
+          "period", back, back_expr, (0, 25, 3, 6), color="first_channel", y_fmt=PCT, y_title="back within 90 days", x_title="when they first bought"),
     chart("bar", "Younger first-time buyers come back a little more", "first_orders",
-          "age_band", back, back_expr, (3, 19, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="age"),
+          "age_band", back, back_expr, (3, 25, 3, 6), y_fmt=PCT, y_title="back within 90 days", x_title="age"),
     place({"name": wid(), "queries": query("cohorts", {"k": "`k`", "cohort": "`cohort`", "sum(retention_pct)": "SUM(`retention_pct`)"}),
            "spec": {"version": 3, "widgetType": "heatmap",
                     "encodings": {"x": {"fieldName": "k", "scale": {"type": "categorical"}, "displayName": "months after first month"},
                                   "y": {"fieldName": "cohort", "scale": {"type": "categorical"}, "displayName": "first purchase month"},
                                   "color": {"fieldName": "sum(retention_pct)", "scale": {"type": "quantitative"}, "displayName": "% buying again"}},
                     "frame": {"showTitle": True, "title": "% of each cohort buying again k months later: the drop happens right after the first purchase"}}},
-          0, 25, 6, 8),
+          0, 31, 6, 8),
 ]
 
 page2 = [
@@ -137,9 +149,9 @@ page2 = [
           "month", "sum(return_90d_pct)", "SUM(`return_90d_pct`)", (3, 10, 3, 6), x_type="temporal", y_title="% back within 90 days"),
     chart("line", "% of first-time buyers who have ordered again, by day", "return_window",
           "day", "sum(pct_back)", "SUM(`pct_back`)", (0, 16, 3, 7), x_type="quantitative", y_title="% back"),
-    chart("bar", "Change in odds of coming back, each driver with the others held constant", "odds_ratios",
-          "driver_group", "sum(change_in_odds_pct)", "SUM(`change_in_odds_pct`)", (3, 16, 3, 7),
-          y_title="% change in odds vs reference group", x_title="driver", horizontal=True),
+    chart("bar", "Percentage points more or less likely to come back, each driver with the others held constant", "marginal_effects",
+          "driver_group", "sum(pp_change)", "SUM(`pp_change`)", (3, 16, 3, 7),
+          y_title="pp vs reference group", x_title="driver", horizontal=True),
 ]
 
 spec = {
