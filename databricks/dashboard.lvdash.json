@@ -1,0 +1,1184 @@
+{
+  "datasets": [
+    {
+      "name": "first_orders",
+      "displayName": "first_orders",
+      "queryLines": [
+        "SELECT *, CAST(returned_90d AS INT) AS came_back,\n",
+        "       CASE WHEN first_date <= DATE'2020-03-26' THEN CAST(returned_180d AS INT) END AS came_back_180,\n",
+        "       CASE items_band WHEN '1' THEN '01' WHEN '2' THEN '02' WHEN '3' THEN '03'\n",
+        "            WHEN '4-5' THEN '04-05' WHEN '6-9' THEN '06-09' ELSE '10+' END AS items_in_basket\n",
+        "FROM workspace.hm_retention.silver_first_orders"
+      ]
+    },
+    {
+      "name": "cohorts",
+      "displayName": "cohorts",
+      "queryLines": [
+        "SELECT date_format(cohort_month, 'yyyy-MM') AS cohort, k, retention_pct FROM workspace.hm_retention.gold_cohort_retention"
+      ]
+    },
+    {
+      "name": "weekly_channel",
+      "displayName": "weekly_channel",
+      "queryLines": [
+        "SELECT * FROM workspace.hm_retention.gold_weekly_channel"
+      ]
+    },
+    {
+      "name": "burn_in",
+      "displayName": "burn_in",
+      "queryLines": [
+        "SELECT * FROM workspace.hm_retention.gold_burn_in"
+      ]
+    },
+    {
+      "name": "return_window",
+      "displayName": "return_window",
+      "queryLines": [
+        "SELECT * FROM workspace.hm_retention.gold_return_window"
+      ]
+    },
+    {
+      "name": "odds_ratios",
+      "displayName": "odds_ratios",
+      "queryLines": [
+        "SELECT driver_group, CAST(odds_ratio AS DOUBLE) AS odds_ratio,\n",
+        "       round((CAST(odds_ratio AS DOUBLE) - 1) * 100, 1) AS change_in_odds_pct\n",
+        "FROM workspace.hm_retention.gold_odds_ratios"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "who_comes_back",
+      "displayName": "Who comes back?",
+      "layout": [
+        {
+          "widget": {
+            "name": "w1",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Who comes back after their first H&M purchase?\n",
+                "330,336 first-time buyers, Aug 2019 to Jun 2020. \"Came back\" means a second order within 90 days. Filters apply to every chart on this page except the cohort heatmap.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "w2",
+            "queries": [
+              {
+                "name": "f_first_orders",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "cohort_month",
+                      "expression": "`cohort_month`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "cohort_month",
+                    "displayName": "First purchase month",
+                    "queryName": "f_first_orders"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "First purchase month"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "w3",
+            "queries": [
+              {
+                "name": "f_first_orders",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "first_channel",
+                      "expression": "`first_channel`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "first_channel",
+                    "displayName": "First channel",
+                    "queryName": "f_first_orders"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "First channel"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "w4",
+            "queries": [
+              {
+                "name": "f_first_orders",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "age_band",
+                      "expression": "`age_band`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "age_band",
+                    "displayName": "Age",
+                    "queryName": "f_first_orders"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Age"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 2,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "w5",
+            "queries": [
+              {
+                "name": "f_first_orders",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "main_department",
+                      "expression": "`main_department`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "main_department",
+                    "displayName": "Department",
+                    "queryName": "f_first_orders"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Department"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "w6",
+            "queries": [
+              {
+                "name": "f_first_orders",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "club_status",
+                      "expression": "`club_status`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "club_status",
+                    "displayName": "Club status",
+                    "queryName": "f_first_orders"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Club status"
+              }
+            }
+          },
+          "position": {
+            "x": 5,
+            "y": 2,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "w7",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "buyers",
+                      "expression": "COUNT(`customer_id`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "buyers",
+                  "displayName": "First-time buyers"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "First-time buyers"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "w8",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "avg(came_back)",
+                      "expression": "AVG(`came_back`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg(came_back)",
+                  "displayName": "Back within 90 days",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Back within 90 days"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 4,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "w9",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "avg(came_back_180)",
+                      "expression": "AVG(`came_back_180`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg(came_back_180)",
+                  "displayName": "Back within 180 days (first bought by Mar 2020)",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Back within 180 days (first bought by Mar 2020)"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 4,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "w10",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "club_status",
+                      "expression": "`club_status`"
+                    },
+                    {
+                      "name": "avg(came_back)",
+                      "expression": "AVG(`came_back`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "club_status",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "club status"
+                },
+                "y": {
+                  "fieldName": "avg(came_back)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "back within 90 days",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Unfinished signup (PRE-CREATE) is the biggest warning sign"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w11",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "groups_band",
+                      "expression": "`groups_band`"
+                    },
+                    {
+                      "name": "avg(came_back)",
+                      "expression": "AVG(`came_back`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "groups_band",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "product groups in first basket"
+                },
+                "y": {
+                  "fieldName": "avg(came_back)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "back within 90 days",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Broader first baskets come back more"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 7,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w12",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "items_in_basket",
+                      "expression": "`items_in_basket`"
+                    },
+                    {
+                      "name": "avg(came_back)",
+                      "expression": "AVG(`came_back`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "items_in_basket",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "items in first basket"
+                },
+                "y": {
+                  "fieldName": "avg(came_back)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "back within 90 days",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Bigger first baskets come back more"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w13",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "markdown_band",
+                      "expression": "`markdown_band`"
+                    },
+                    {
+                      "name": "avg(came_back)",
+                      "expression": "AVG(`came_back`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "markdown_band",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "markdown items in first basket"
+                },
+                "y": {
+                  "fieldName": "avg(came_back)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "back within 90 days",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Deal-only first baskets come back less"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 13,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w14",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "period",
+                      "expression": "`period`"
+                    },
+                    {
+                      "name": "avg(came_back)",
+                      "expression": "AVG(`came_back`)"
+                    },
+                    {
+                      "name": "first_channel",
+                      "expression": "`first_channel`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "period",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "when they first bought"
+                },
+                "y": {
+                  "fieldName": "avg(came_back)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "back within 90 days",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "first_channel",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "first_channel"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Store closures did not bring weaker online customers"
+              },
+              "mark": {
+                "layout": "group"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 19,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w15",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "first_orders",
+                  "fields": [
+                    {
+                      "name": "age_band",
+                      "expression": "`age_band`"
+                    },
+                    {
+                      "name": "avg(came_back)",
+                      "expression": "AVG(`came_back`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "age_band",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "age"
+                },
+                "y": {
+                  "fieldName": "avg(came_back)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "back within 90 days",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Younger first-time buyers come back a little more"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 19,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w16",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cohorts",
+                  "fields": [
+                    {
+                      "name": "k",
+                      "expression": "`k`"
+                    },
+                    {
+                      "name": "cohort",
+                      "expression": "`cohort`"
+                    },
+                    {
+                      "name": "sum(retention_pct)",
+                      "expression": "SUM(`retention_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "heatmap",
+              "encodings": {
+                "x": {
+                  "fieldName": "k",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "months after first month"
+                },
+                "y": {
+                  "fieldName": "cohort",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "first purchase month"
+                },
+                "color": {
+                  "fieldName": "sum(retention_pct)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "% buying again"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "% of each cohort buying again k months later: the drop happens right after the first purchase"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 25,
+            "width": 6,
+            "height": 8
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS"
+    },
+    {
+      "name": "data_prep",
+      "displayName": "How the data was prepared",
+      "layout": [
+        {
+          "widget": {
+            "name": "w17",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## How the data was prepared\n",
+                "- **Order:** one customer, one day, one channel (the data has no order ID).\n",
+                "- **Channel 1 = store:** its orders fall to zero while stores were closed in spring 2020.\n",
+                "- **Cohorts start Aug 2019:** before that, most \"new\" customers were existing ones the data had not seen yet.\n",
+                "- **90-day window:** catches about 60% of the returns that happen within a year, and keeps the spring 2020 cohorts measurable.\n",
+                "- Prices are scaled by H&M, so no currency appears anywhere.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "w18",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "weekly_channel",
+                  "fields": [
+                    {
+                      "name": "week",
+                      "expression": "`week`"
+                    },
+                    {
+                      "name": "sum(orders)",
+                      "expression": "SUM(`orders`)"
+                    },
+                    {
+                      "name": "channel",
+                      "expression": "`channel`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "week",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "week"
+                },
+                "y": {
+                  "fieldName": "sum(orders)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "orders per week"
+                },
+                "color": {
+                  "fieldName": "channel",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "channel"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Weekly orders by channel: channel 1 drops to zero when stores close"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w19",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "burn_in",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "sum(pct_new)",
+                      "expression": "SUM(`pct_new`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "month"
+                },
+                "y": {
+                  "fieldName": "sum(pct_new)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "% new"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Share of each month's buyers seen for the first time"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w20",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "burn_in",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "sum(return_90d_pct)",
+                      "expression": "SUM(`return_90d_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "month"
+                },
+                "y": {
+                  "fieldName": "sum(return_90d_pct)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "% back within 90 days"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "90-day return rate of each month's 'new' buyers settles from Aug 2019"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 10,
+            "width": 3,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "w21",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "return_window",
+                  "fields": [
+                    {
+                      "name": "day",
+                      "expression": "`day`"
+                    },
+                    {
+                      "name": "sum(pct_back)",
+                      "expression": "SUM(`pct_back`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "day",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "day"
+                },
+                "y": {
+                  "fieldName": "sum(pct_back)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "% back"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "% of first-time buyers who have ordered again, by day"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 16,
+            "width": 3,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "w22",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "odds_ratios",
+                  "fields": [
+                    {
+                      "name": "driver_group",
+                      "expression": "`driver_group`"
+                    },
+                    {
+                      "name": "sum(change_in_odds_pct)",
+                      "expression": "SUM(`change_in_odds_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sum(change_in_odds_pct)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "% change in odds vs reference group"
+                },
+                "y": {
+                  "fieldName": "driver_group",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "x"
+                    }
+                  },
+                  "displayName": "driver"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Change in odds of coming back, each driver with the others held constant"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 16,
+            "width": 3,
+            "height": 7
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS"
+    }
+  ]
+}

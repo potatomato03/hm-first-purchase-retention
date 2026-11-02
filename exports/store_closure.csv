@@ -1,0 +1,7 @@
+period,channel_group,customers,return_90d_pct
+before closure,online,156855,31.2
+before closure,store,62856,33.8
+stores closed,online,57850,33.1
+stores closed,store,212,29.2
+stores reopening,online,42042,33.3
+stores reopening,store,10521,46.9

@@ -1,0 +1,30 @@
+driver,group,customers,return_90d_pct
+Items in first basket,1,96308,29.4
+Items in first basket,2,80284,32.1
+Items in first basket,3,46528,34.0
+Items in first basket,4-5,53135,35.1
+Items in first basket,6-9,36846,36.0
+Items in first basket,10+,17235,38.5
+Product groups in first basket,1,194178,30.5
+Product groups in first basket,2,88801,35.4
+Product groups in first basket,3,33129,37.0
+Product groups in first basket,4+,14228,38.6
+First purchase channel,online,256747,32.0
+First purchase channel,store,73589,35.7
+Main department,Baby/Children,5788,36.8
+Main department,Divided,90781,32.9
+Main department,Ladieswear,208917,32.8
+Main department,Menswear,13357,33.0
+Main department,Sport,11493,29.6
+Markdown items in first basket,all on markdown,73438,31.2
+Markdown items in first basket,none on markdown,183892,32.2
+Markdown items in first basket,some on markdown,73006,35.9
+Age,16-24,110131,35.4
+Age,25-34,81586,33.4
+Age,35-44,35781,30.3
+Age,45-54,53561,31.4
+Age,55+,45679,30.1
+Age,unknown,3598,19.9
+Club status,ACTIVE,305999,34.0
+Club status,PRE-CREATE,22552,17.8
+Club status,other,1785,23.2
