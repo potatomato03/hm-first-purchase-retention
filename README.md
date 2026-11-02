@@ -45,15 +45,16 @@ Based on 330,336 first-time buyers between Aug 2019 and Jun 2020. The effects ar
 ## Experiment
 Everything above is correlation. This is the test I'd run before building anything around it.
 
-- **Hypothesis:** showing first-time buyers a complementary second category raises the share who come back within 90 days. For Glance, that means a second-category suggestion right after the first try-on.
-- **Randomization:** new customers split 50/50 at their first visit, by a hash of the customer ID, with a sample ratio mismatch check before reading results.
+- **Hypothesis:** showing first-time buyers a complementary second category at their first checkout raises the share who come back within 90 days. For Glance, that means a second-category suggestion right after the first try-on.
+- **Randomization:** customers split 50/50 when they reach their first checkout, by a hash of the customer ID. Everyone in the test is then a first-time buyer, so the 32.8% baseline applies. Randomizing earlier would bias the result, because the suggestion could change who buys at all. A sample ratio mismatch check runs before results are read.
+- **Analysis:** intent to treat. Everyone who reached checkout counts in their group, including anyone who abandons after seeing the suggestion.
 - **Primary metric:** 90-day return rate. The baseline is 32.8%, and the minimum detectable effect is 1 percentage point.
 - **Sample size:** 34,868 customers per arm (alpha 0.05, power 0.8). That's about 10 weeks of new customers, then 90 days before the result can be read. A 0.5-point bar would need about four times as many.
 - **Leading indicator:** product groups in the first basket. It's readable the same day, so if it doesn't move within two weeks, the suggestion isn't changing behavior.
 - **Guardrails:**
   - first-order value
   - markdown share, since deal-only first baskets return less
-  - checkout conversion
+  - checkout completion, so the suggestion doesn't cost first orders
 - **Decision rule:** ship if the 90-day lift's 95% confidence interval excludes zero and no guardrail is significantly worse. If the leading indicator moves but the return rate doesn't, the observational link wasn't causal, and the lever gets dropped.
 
 ## What it would mean for an AI try-on product
@@ -87,14 +88,17 @@ All are documented with evidence in [DECISIONS.md](DECISIONS.md).
 | `figures/` | Charts from the notebook |
 | `exports/` | Result tables from the notebook. `marginal_effects.csv` feeds the dashboard's driver chart, and `experiment.csv` holds the experiment sizing |
 | `load_data.py` | Downloads the three Kaggle files and converts them to Parquet |
+| `requirements.txt` | Python dependencies |
+| `LICENSE` | MIT license for the code |
 
 ## Reproduce
-1. Download `transactions_train.csv`, `customers.csv` and `articles.csv` from the [Kaggle competition](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations), after accepting its rules, and run `python load_data.py`.
-2. Run the notebook to produce the local analysis and the exports.
-3. For Databricks:
+1. Install the dependencies: `pip install -r requirements.txt` (Python 3.12).
+2. Download `transactions_train.csv`, `customers.csv` and `articles.csv` from the [Kaggle competition](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations), after accepting its rules, and run `python load_data.py`.
+3. Run the notebook to produce the local analysis and the exports.
+4. For Databricks:
    - set the `DATABRICKS_HOST` environment variable to your workspace URL (sign-in happens in the browser, no token needed)
    - `python databricks/run.py upload`
    - `python databricks/run.py sql databricks/sql/01_bronze.sql`, then the same for `02_silver.sql` and `03_gold.sql`
    - `python databricks/job.py` to schedule the refresh, and `python databricks/dashboard.py` to publish the dashboard
 
-**Data license:** H&M released the dataset for non-commercial and academic use. The data itself is not in this repository.
+**License:** the code is MIT licensed (see `LICENSE`). H&M released the dataset for non-commercial and academic use, and the data itself is not in this repository.

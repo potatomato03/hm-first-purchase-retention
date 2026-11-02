@@ -1,0 +1,13 @@
+# analysis
+duckdb>=2.0
+pandas>=2.3
+numpy>=2.3
+pyarrow>=25.0
+matplotlib>=3.10
+statsmodels>=0.15
+# notebook
+nbconvert>=7.17
+ipykernel>=6.29
+# data download and Databricks
+kaggle>=2.2
+databricks-sdk>=0.159
