@@ -34,6 +34,7 @@ Based on 330,336 first-time buyers between Aug 2019 and Jun 2020. The effects ar
 3. **Breadth beats size.** A first basket covering 4 or more product groups makes a return 4.1 pp more likely than a single-group basket (95% CI 3.1 to 5.0 pp), on top of what basket size adds.
 4. **Deal-only first purchases are weaker.** An all-markdown first basket makes a return 2.5 pp less likely than a full-price one.
 5. **Pandemic online arrivals were not weaker customers.** First-time buyers who came in online while stores were closed returned 33.1% of the time, against 31.2% for online first-timers before the closures.
+6. **The first product says a lot about the customer.** Among 46,958 one-item, full-price, online first orders, 30.2% of those who started with a dress came back within 90 days, against 19.0% for a bag, the lowest of 25 product types. Both rates are standardised to the same month and age mix (`first_product.py`, `exports/first_product.csv`). This is a correlation: the data cannot say whether the product changes the customer or different customers choose different products.
 
 **How big is the breadth lever?** About 30,000 first-time buyers arrive each month, and 58.8% of them buy from a single category. If a "complete the look" suggestion turned 10% of those baskets into two-category baskets, and the full observational gap were causal, that would mean about 54 extra returning customers a month. That's an upper bound, which is why the next step is a test, not a launch.
 
@@ -87,6 +88,7 @@ All are documented with evidence in [DECISIONS.md](DECISIONS.md).
 | `DECISIONS.md` | Data quality log and the evidence behind each decision |
 | `figures/` | Charts from the notebook |
 | `exports/` | Result tables from the notebook. `marginal_effects.csv` feeds the dashboard's driver chart, and `experiment.csv` holds the experiment sizing |
+| `first_product.py` | 90-day return rate by first product, adjusted for month and age |
 | `load_data.py` | Downloads the three Kaggle files and converts them to Parquet |
 | `requirements.txt` | Python dependencies |
 | `LICENSE` | MIT license for the code |
